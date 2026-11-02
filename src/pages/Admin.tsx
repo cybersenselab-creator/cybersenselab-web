@@ -7,8 +7,16 @@ import { formatDate, truncate } from "../lib/format";
 import InstagramSyncCard from "../admin/InstagramSyncCard";
 import RecordFormModal from "../admin/RecordFormModal";
 import { fetchSyncStatus, triggerSync, type SyncStatus } from "../admin/instagramSync";
-import { attachImages, errorMessage, rpc, saveRecord, toDateTimeInput, type FormData } from "../admin/records";
-import { imageColumn, ownedStoragePath, removeTableImage, uploadTableImage } from "../admin/storageImages";
+import { attachImages, errorMessage, rpc, saveRecord, toDateTimeInput, toFormText, type FormData } from "../admin/records";
+import {
+  imageColumn,
+  ownedGalleryPath,
+  ownedStoragePath,
+  removeGalleryImages,
+  removeTableImage,
+  uploadGalleryImage,
+  uploadTableImage,
+} from "../admin/storageImages";
 import {
   IMAGE_ENTITY_TABLES,
   TABLES,
@@ -172,6 +180,7 @@ export default function Admin() {
     for (const field of tableDef.fields) {
       if (field.virtual) initial[field.name] = (record.images || []).map((image) => image.image_url).join("\n");
       else if (field.type === "datetime-local") initial[field.name] = toDateTimeInput(record[field.name]);
+      else if (field.type === "lines" || field.type === "authors") initial[field.name] = toFormText(field.type, record[field.name]);
       else initial[field.name] = record[field.name] ?? field.default ?? "";
     }
     setForm(initial);
@@ -188,9 +197,13 @@ export default function Admin() {
       // Also remove the record's uploaded image; a failure here doesn't undo the delete.
       const column = imageColumn(table);
       const path = column ? ownedStoragePath(table, record[column]) : null;
-      if (path) {
+      const galleryPaths = (record.images || [])
+        .map((image) => ownedGalleryPath(table, image.image_url))
+        .filter((p): p is string => !!p);
+      if (path || galleryPaths.length) {
         try {
-          await removeTableImage(table, path);
+          if (path) await removeTableImage(table, path);
+          await removeGalleryImages(galleryPaths);
         } catch (error) {
           console.error("Silinen kaydın Storage görseli temizlenemedi:", error);
           toast.error("Kayıt silindi ancak eski görsel Storage’dan temizlenemedi.");
@@ -224,11 +237,17 @@ export default function Admin() {
 
       await saveRecord(table, tableDef, editing, data);
 
-      // The image was replaced or removed: delete the old file (best effort).
+      // Images that were replaced or dropped from the gallery: delete our uploads (best effort).
       const currentPath = column ? ownedStoragePath(table, data[column]) : null;
-      if (previousPath && previousPath !== currentPath) {
+      const keptUrls = new Set(String(data._images || "").split("\n").map((line) => line.trim()));
+      const droppedGallery = (editing?.images || [])
+        .filter((image) => !keptUrls.has(image.image_url))
+        .map((image) => ownedGalleryPath(table, image.image_url))
+        .filter((p): p is string => !!p);
+      if ((previousPath && previousPath !== currentPath) || droppedGallery.length) {
         try {
-          await removeTableImage(table, previousPath);
+          if (previousPath && previousPath !== currentPath) await removeTableImage(table, previousPath);
+          await removeGalleryImages(droppedGallery);
         } catch (error) {
           console.error("Eski Storage görseli temizlenemedi:", error);
           toast.error("Kayıt güncellendi ancak eski görsel Storage’dan temizlenemedi.");
@@ -434,6 +453,11 @@ export default function Admin() {
             setPreviewUrl(URL.createObjectURL(file));
           }}
           onClearFile={clearPendingFile}
+          onUploadGalleryImage={async (file) => {
+            const userId = session?.user?.id;
+            if (!userId) throw new Error("Görsel yüklemek için geçerli bir admin oturumu gerekiyor.");
+            return uploadGalleryImage(table, file, userId);
+          }}
           onSubmit={submit}
           onClose={closeForm}
         />

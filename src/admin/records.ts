@@ -20,6 +20,35 @@ export function attachImages(records: AdminRecord[], images: { entity_id: unknow
   return records.map((record) => ({ ...record, images: (record.id && byEntity.get(String(record.id))) || [] }));
 }
 
+const splitLines = (value: unknown) =>
+  String(value || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+/** "Ad Soyad | Rol | https://foto" lines → [{ name, role, avatar_image }]. */
+function parseAuthors(value: unknown) {
+  return splitLines(value).map((line) => {
+    const [name, role, avatar] = line.split("|").map((part) => part.trim());
+    if (avatar && !/^https:\/\//i.test(avatar)) throw new Error(`Fotoğraf adresi https:// ile başlamalı: ${line}`);
+    return { name, role: role || null, avatar_image: avatar || null };
+  });
+}
+
+/** Database value → text shown in the form for list-like fields. */
+export function toFormText(type: string, value: unknown): string {
+  if (type === "lines") return Array.isArray(value) ? value.join("\n") : "";
+  if (type === "authors") {
+    if (!Array.isArray(value)) return "";
+    return value
+      .map((author: { name?: string; role?: string | null; avatar_image?: string | null }) =>
+        [author.name || "", author.role || "", author.avatar_image || ""].join(" | ").replace(/( \| )+$/, ""),
+      )
+      .join("\n");
+  }
+  return String(value ?? "");
+}
+
 /** ISO timestamp → value for <input type="datetime-local"> in local time. */
 export function toDateTimeInput(value: unknown): string {
   if (!value) return "";
@@ -46,6 +75,8 @@ export async function saveRecord(table: TableId, tableDef: TableDef, editing: Ad
     if (field.virtual || (editing && field.createOnly)) continue;
     const value = form[field.name];
     if (field.type === "number") payload[field.name] = value === "" ? null : Number(value);
+    else if (field.type === "lines") payload[field.name] = splitLines(value);
+    else if (field.type === "authors") payload[field.name] = parseAuthors(value);
     else if (field.type === "checkbox") payload[field.name] = !!value;
     else if (field.type === "datetime-local") payload[field.name] = toIsoOrNull(value);
     else payload[field.name] = value === "" ? null : value;

@@ -1,8 +1,16 @@
 #!/usr/bin/env bash
 # Regenerates src/lib/database.types.ts from the live main project (read-only).
 # Needs MAIN_DB_URL in .env.backup (see scripts/backup.sh) and Docker.
+#   scripts/gen-types.sh          # from production
+#   scripts/gen-types.sh --local  # from the local stack (to type unreleased migrations)
 set -euo pipefail
 cd "$(dirname "$0")/.."
+if [[ "${1:-}" == "--local" ]]; then
+  npx -y supabase@2 gen types typescript --local --schema public > src/lib/database.types.ts
+  npx prettier --write --log-level warn src/lib/database.types.ts
+  echo "✓ src/lib/database.types.ts (local)"
+  exit 0
+fi
 # The CLI rejects unencoded special characters in the password, so re-encode it.
 URL="$(python3 -I - <<'PY'
 import re, urllib.parse

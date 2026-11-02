@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import type { FormData } from "./records";
 import { errorMessage } from "./records";
 import { validateImageFile } from "./storageImages";
+import { useState } from "react";
 import type { FieldDef, TableDef } from "./tables";
 
 const inputClass = `w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm
@@ -14,6 +15,11 @@ const OPTION_LABELS: Record<string, string> = {
   plan: "Planlama",
   journal: "Dergi",
   conference: "Konferans",
+  web: "Web",
+  mobile: "Mobil",
+  fullstack: "Full-Stack",
+  standard: "Standart",
+  wide: "Geniş",
 };
 
 type Props = {
@@ -27,6 +33,8 @@ type Props = {
   previewUrl: string;
   onPickFile: (file: File) => void;
   onClearFile: () => void;
+  /** Uploads a gallery image and resolves to its public URL. */
+  onUploadGalleryImage: (file: File) => Promise<string>;
   onSubmit: (event: FormEvent) => void;
   onClose: () => void;
 };
@@ -62,6 +70,7 @@ export default function RecordFormModal(props: Props) {
                 {field.label} {field.required && <span className="text-red-400">*</span>}
               </label>
               <FieldInput field={field} {...props} set={set} />
+              {field.hint && <p className="mt-1 text-[11px] text-gray-400">{field.hint}</p>}
             </div>
           ))}
           <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
@@ -99,9 +108,11 @@ function FieldInput({
   previewUrl,
   onPickFile,
   onClearFile,
+  onUploadGalleryImage,
   set,
 }: Props & { field: FieldDef; set: (name: string, value: unknown) => void }) {
   const value = form[field.name];
+  const [uploading, setUploading] = useState(false);
 
   switch (field.type) {
     case "textarea":
@@ -151,16 +162,58 @@ function FieldInput({
           required={field.required}
         />
       );
-    case "image-upload":
-      // Gallery images are entered as URLs, one per line.
+    case "lines":
+    case "authors":
       return (
         <textarea
           value={String(value || "")}
           onChange={(e) => set(field.name, e.target.value)}
-          placeholder="Her satıra bir görsel URL'si yazın"
           className={`${inputClass}
-                                 min-h-[60px] resize-y`}
+                                 min-h-[80px] resize-y`}
+          required={field.required}
         />
+      );
+    case "image-upload":
+      // Gallery images: one URL per line; uploaded files are appended as new lines.
+      return (
+        <div className="space-y-2">
+          <textarea
+            value={String(value || "")}
+            onChange={(e) => set(field.name, e.target.value)}
+            placeholder="Her satıra bir görsel URL'si yazın"
+            className={`${inputClass}
+                                 min-h-[60px] resize-y`}
+          />
+          <label
+            className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-navy text-white text-xs font-semibold transition-colors ${uploading ? "opacity-60 cursor-wait" : "cursor-pointer hover:bg-navy/90"}`}
+          >
+            <i className={`fa ${uploading ? "fa-circle-notch fa-spin" : "fa-upload"}`} />{" "}
+            {uploading ? "Yükleniyor" : "Görsel yükle"}
+            <input
+              type="file"
+              multiple
+              disabled={uploading}
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="sr-only"
+              onChange={async (e) => {
+                const files = Array.from(e.target.files || []);
+                e.target.value = "";
+                if (files.length === 0) return;
+                setUploading(true);
+                try {
+                  const urls: string[] = [];
+                  for (const file of files) urls.push(await onUploadGalleryImage(file));
+                  const current = String(form[field.name] || "").trim();
+                  set(field.name, [current, ...urls].filter(Boolean).join("\n"));
+                } catch (error) {
+                  toast.error(errorMessage(error, "Görsel yüklenemedi."));
+                } finally {
+                  setUploading(false);
+                }
+              }}
+            />
+          </label>
+        </div>
       );
     case "storage-image": {
       // Shows the picked file (preview) or the saved URL; otherwise the value is a Font Awesome icon name.
@@ -240,6 +293,10 @@ function FieldInput({
       required={field.required}
       min={field.min}
       max={field.max}
+      pattern={field.pattern?.regex}
+      title={field.pattern?.message}
+      onInvalid={(e) => field.pattern && e.currentTarget.setCustomValidity(field.pattern.message)}
+      onInput={(e) => e.currentTarget.setCustomValidity("")}
     />
   );
 }

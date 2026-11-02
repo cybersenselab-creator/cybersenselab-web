@@ -133,3 +133,40 @@ export async function removeTableImage(table: TableId, path: string) {
   const { error } = await supabase.storage.from(target.bucket).remove([path]);
   if (error) throw error;
 }
+
+/**
+ * Gallery images (content_images) go to the content-images bucket under `<table>/<userId>/`.
+ * Resized to at most 1600px like project covers.
+ */
+export async function uploadGalleryImage(table: TableId, file: File, userId: string) {
+  validateImageFile(file);
+  const prepared = await prepareImage(file, 1600);
+  const path = `${table}/${userId}/${crypto.randomUUID()}.${EXTENSIONS.get(prepared.type)}`;
+  const bucket = supabase.storage.from("content-images");
+  const { error } = await bucket.upload(path, prepared, { cacheControl: "3600", contentType: prepared.type, upsert: false });
+  if (error) throw error;
+  return bucket.getPublicUrl(path).data.publicUrl;
+}
+
+/**
+ * Storage path of a gallery image uploaded through this panel for `table`
+ * (content-images/<table>/…); null for external URLs and Instagram imports.
+ */
+export function ownedGalleryPath(table: TableId, url: string): string | null {
+  try {
+    const parsed = new URL(url);
+    const marker = "/storage/v1/object/public/content-images/";
+    const index = parsed.pathname.indexOf(marker);
+    if (index < 0) return null;
+    const path = decodeURIComponent(parsed.pathname.slice(index + marker.length));
+    return path.startsWith(`${table}/`) ? path : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function removeGalleryImages(paths: string[]) {
+  if (paths.length === 0) return;
+  const { error } = await supabase.storage.from("content-images").remove(paths);
+  if (error) throw error;
+}

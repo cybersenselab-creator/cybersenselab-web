@@ -1,10 +1,16 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
-import data, { type PortfolioAuthor, type PortfolioProject } from "../data/portfolios";
+import {
+  PORTFOLIO_CATEGORIES,
+  usePortfolios,
+  type PortfolioAuthor,
+  type PortfolioProject,
+} from "../lib/portfolios";
+import { ErrorState, LoadingState } from "../components/ui/UIStates";
 import "../styles/portfolios.css";
 
-// Portfolio showcase (/portfolyolar and /portfolyolar/:id). Static data, own stylesheet (pf-*).
-// Ported from reference/assets/Portfolios.js, which the previous developer wrote by hand.
+// Portfolio showcase (/portfolyolar and /portfolyolar/:id) with its own stylesheet (pf-*).
+// Ported from reference/assets/Portfolios.js; data now comes from Supabase (admin-managed).
 
 const PAGE_TITLE = "Portfolyolar | CyberSense Laboratuvarı";
 
@@ -18,11 +24,19 @@ const slugify = (value: string) =>
     .replace(/^-|-$/g, "");
 
 /** Unique authors across all projects as [slug, author], sorted by Turkish collation. */
-const AUTHORS: [string, PortfolioAuthor][] = Array.from(
-  new Map(data.projects.flatMap((project) => project.authors).map((author) => [slugify(author.name), author])).entries(),
-).sort((a, b) => a[1].name.localeCompare(b[1].name, "tr"));
+function uniqueAuthors(projects: PortfolioProject[]): [string, PortfolioAuthor][] {
+  return Array.from(
+    new Map(projects.flatMap((project) => project.authors).map((author) => [slugify(author.name), author])).entries(),
+  ).sort((a, b) => a[1].name.localeCompare(b[1].name, "tr"));
+}
 
-const categoryLabel = (id: string) => data.categories.find((category) => category.id === id)?.label || id;
+type Stats = { projects: number; authors: number };
+const statsOf = (projects: PortfolioProject[]): Stats => ({
+  projects: projects.length,
+  authors: uniqueAuthors(projects).length,
+});
+
+const categoryLabel = (id: string) => PORTFOLIO_CATEGORIES.find((category) => category.id === id)?.label || id;
 const Icon = ({ name }: { name: string }) => <i className={`fa ${name} `} aria-hidden />;
 const imageAlt = (project: PortfolioProject, index: number) => `${project.title} — görsel ${index + 1}`;
 
@@ -54,7 +68,7 @@ function ExternalLink({ href, children, secondary = false }: { href?: string; ch
   );
 }
 
-function Hero({ detail, query = "" }: { detail?: PortfolioProject; query?: string }) {
+function Hero({ detail, query = "", stats }: { detail?: PortfolioProject; query?: string; stats?: Stats }) {
   return (
     <section className="pf-hero">
       <div className="pf-container">
@@ -76,13 +90,13 @@ function Hero({ detail, query = "" }: { detail?: PortfolioProject; query?: strin
                 : "Katılımcılarımızın tasarım ve yazılım çalışmalarını keşfedin."}
             </p>
           </div>
-          {!detail && (
+          {!detail && stats && (
             <div className="pf-summary">
               {(
                 [
-                  [data.projects.length, "Proje"],
-                  [AUTHORS.length, "Katılımcı"],
-                  [data.categories.length, "Kategori"],
+                  [stats.projects, "Proje"],
+                  [stats.authors, "Katılımcı"],
+                  [PORTFOLIO_CATEGORIES.length, "Kategori"],
                 ] as const
               ).map(([count, label]) => (
                 <div key={label}>
@@ -136,20 +150,21 @@ function PortfolioCard({ project, query }: { project: PortfolioProject; query: s
   );
 }
 
-const CATEGORY_OPTIONS = [{ id: "", label: "Tümü" }, ...data.categories];
+const CATEGORY_OPTIONS = [{ id: "", label: "Tümü" }, ...PORTFOLIO_CATEGORIES];
 
 // Filters live in the URL (?kategori=, ?yazar=, ?q=) so a filtered list can be shared and
 // the detail page's back link returns to the same view.
-function PortfolioList() {
+function PortfolioList({ projects }: { projects: PortfolioProject[] }) {
   const [params, setParams] = useSearchParams();
   const query = params.toString() ? `?${params}` : "";
-  const category = data.categories.some((item) => item.id === params.get("kategori")) ? params.get("kategori")! : "";
-  const author = AUTHORS.some(([id]) => id === params.get("yazar")) ? params.get("yazar")! : "";
+  const authors = useMemo(() => uniqueAuthors(projects), [projects]);
+  const category = PORTFOLIO_CATEGORIES.some((item) => item.id === params.get("kategori")) ? params.get("kategori")! : "";
+  const author = authors.some(([id]) => id === params.get("yazar")) ? params.get("yazar")! : "";
   const search = params.get("q") || "";
 
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase("tr-TR");
-    return data.projects.filter((project) => {
+    return projects.filter((project) => {
       const haystack = `${project.title} ${project.description} ${project.authors.map((p) => p.name).join(" ")} ${project.tech.join(" ")}`;
       return (
         (!category || project.category === category) &&
@@ -157,7 +172,7 @@ function PortfolioList() {
         (!term || haystack.toLocaleLowerCase("tr-TR").includes(term))
       );
     });
-  }, [category, author, search]);
+  }, [projects, category, author, search]);
 
   const change = (key: string, value: string) => {
     const next = new URLSearchParams(params);
@@ -170,7 +185,7 @@ function PortfolioList() {
 
   return (
     <div className="pf-page">
-      <Hero />
+      <Hero stats={statsOf(projects)} />
       <section className="pf-container pf-content" aria-label="Portfolyo koleksiyonu">
         <div className="pf-filters">
           <div className="pf-filter-heading">
@@ -189,7 +204,7 @@ function PortfolioList() {
               </span>
               <span>Tüm katılımcılar</span>
             </button>
-            {AUTHORS.map(([id, person]) => (
+            {authors.map(([id, person]) => (
               <button
                 key={id}
                 type="button"
@@ -231,7 +246,7 @@ function PortfolioList() {
         <div className="pf-results">
           <p role="status" aria-live="polite">
             <strong>{filtered.length}</strong> proje
-            {hasFilters ? ` / ${data.projects.length} proje` : " listeleniyor"}
+            {hasFilters ? ` / ${projects.length} proje` : " listeleniyor"}
           </p>
           {hasFilters && (
             <button type="button" className="pf-clear" onClick={clearFilters}>
@@ -436,7 +451,8 @@ function PortfolioDetail({ project }: { project: PortfolioProject }) {
 
 export default function Portfolios() {
   const { id } = useParams();
-  const project = data.projects.find((item) => item.id === id);
+  const { data: projects, isLoading, error } = usePortfolios();
+  const project = projects?.find((item) => item.id === id);
 
   useEffect(() => {
     const previousTitle = document.title;
@@ -444,13 +460,15 @@ export default function Portfolios() {
     return () => {
       document.title = previousTitle;
     };
-  }, [id]);
+  }, [id, project]);
 
-  if (!id) return <PortfolioList />;
+  if (isLoading) return <LoadingState text="Portfolyolar yükleniyor..." />;
+  if (error || !projects) return <ErrorState message="Portfolyolar yüklenirken hata oluştu." />;
+  if (!id) return <PortfolioList projects={projects} />;
   if (project) return <PortfolioDetail key={project.id} project={project} />;
   return (
     <div className="pf-page">
-      <Hero />
+      <Hero stats={statsOf(projects)} />
       <div className="pf-container pf-empty">
         <Icon name="fa-folder-open" />
         <h2>Portfolyo bulunamadı</h2>

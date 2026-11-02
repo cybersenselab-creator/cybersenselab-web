@@ -409,6 +409,58 @@ export type Database = {
         };
         Relationships: [];
       };
+      portfolios: {
+        Row: {
+          authors: NonNullable<Json>;
+          category: string;
+          created_at: string;
+          description: string;
+          features: string[];
+          gallery_style: string;
+          github_url: string | null;
+          id: string;
+          is_published: boolean;
+          live_url: string | null;
+          slug: string;
+          sort_order: number;
+          tech: string[];
+          title: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          authors?: NonNullable<Json>;
+          category?: string;
+          created_at?: string;
+          description?: string;
+          features?: string[];
+          gallery_style?: string;
+          github_url?: string | null;
+          id?: string;
+          is_published?: boolean;
+          live_url?: string | null;
+          slug: string;
+          sort_order?: number;
+          tech?: string[];
+          title: string;
+        };
+        Update: {
+          authors?: NonNullable<Json>;
+          category?: string;
+          created_at?: string;
+          description?: string;
+          features?: string[];
+          gallery_style?: string;
+          github_url?: string | null;
+          id?: string;
+          is_published?: boolean;
+          live_url?: string | null;
+          slug?: string;
+          sort_order?: number;
+          tech?: string[];
+          title?: string;
+        };
+        Relationships: [];
+      };
       projects: {
         Row: {
           created_at: string;

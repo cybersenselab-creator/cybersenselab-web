@@ -18,7 +18,7 @@ inactivity** — `staj-projeleri` was found paused on 2026-11-02 and had to be r
 
 **Tables** (all RLS enabled): `announcements`, `etkinlikler`, `ekip`, `yayinlar`,
 `projects`, `arastirma_alanlari`, `oduller`, `ortaklar`, `site_ayarlari`,
-`content_images`, `admin_users`, `instagram_imports`, `instagram_sync_runs`,
+`content_images`, `portfolios`, `admin_users`, `instagram_imports`, `instagram_sync_runs`,
 `instagram_sync_state`.
 
 **Auth:** one user. Admin rights = row in `admin_users` (checked by `admin_is_admin`

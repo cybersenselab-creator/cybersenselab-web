@@ -12,7 +12,11 @@ export type FieldType =
   | "checkbox"
   | "datetime-local"
   | "image-upload"
-  | "storage-image";
+  | "storage-image"
+  /** text[] column edited as one item per line. */
+  | "lines"
+  /** jsonb author list edited as "Ad Soyad | Rol | Fotoğraf URL" lines. */
+  | "authors";
 
 export type FieldDef = {
   name: string;
@@ -27,6 +31,10 @@ export type FieldDef = {
   virtual?: boolean;
   /** Editable only when creating (e.g. a settings key). */
   createOnly?: boolean;
+  /** Short help text under the input. */
+  hint?: string;
+  /** HTML validation pattern for text inputs, with the message shown when it fails. */
+  pattern?: { regex: string; message: string };
 };
 
 export type TableId =
@@ -38,7 +46,8 @@ export type TableId =
   | "arastirma_alanlari"
   | "oduller"
   | "ortaklar"
-  | "site_ayarlari";
+  | "site_ayarlari"
+  | "portfolios";
 
 export type TableDef = {
   id: TableId;
@@ -468,6 +477,40 @@ export const TABLES: TableDef[] = [
       },
     ],
   },
+  {
+    id: "portfolios",
+    label: "Portfolyolar",
+    icon: "fa-briefcase",
+    titleField: "title",
+    fields: [
+      { name: "title", label: "Başlık", type: "text", required: true },
+      {
+        name: "slug",
+        label: "Adres (slug)",
+        type: "text",
+        required: true,
+        pattern: { regex: "[a-z0-9]+(-[a-z0-9]+)*", message: "Yalnızca küçük harf, rakam ve tire (ör. yeni-proje)." },
+        hint: "Sayfa adresi: /portfolyolar/<slug>. Küçük harf, rakam ve tire. Değiştirirsen eski bağlantılar çalışmaz.",
+      },
+      { name: "category", label: "Kategori", type: "select", options: ["web", "mobile", "fullstack"], default: "web" },
+      { name: "description", label: "Açıklama", type: "textarea", required: true },
+      {
+        name: "authors",
+        label: "Katılımcılar",
+        type: "authors",
+        required: true,
+        hint: "Her satıra bir kişi: Ad Soyad | Rol | Fotoğraf URL (rol ve fotoğraf isteğe bağlı).",
+      },
+      { name: "features", label: "Öne Çıkan Özellikler", type: "lines", hint: "Her satıra bir özellik." },
+      { name: "tech", label: "Teknolojiler", type: "lines", hint: "Her satıra bir teknoloji. Kartta ilk üçü görünür." },
+      { name: "_images", label: "Görseller", type: "image-upload", virtual: true, hint: "İlk görsel kapak olarak kullanılır." },
+      { name: "gallery_style", label: "Görsel Düzeni", type: "select", options: ["standard", "wide"], default: "standard" },
+      { name: "live_url", label: "Canlı / Tasarım URL", type: "url" },
+      { name: "github_url", label: "GitHub URL", type: "url" },
+      { name: "sort_order", label: "Sıralama", type: "number", default: 0 },
+      { name: "is_published", label: "Yayında", type: "checkbox", default: true },
+    ],
+  },
 ];
 
 export function getTable(id: TableId): TableDef {
@@ -475,11 +518,7 @@ export function getTable(id: TableId): TableDef {
 }
 
 /** Tables whose records can have a `content_images` gallery. */
-export const IMAGE_ENTITY_TABLES = new Set<TableId>([
-  "announcements",
-  "projects",
-  "etkinlikler",
-]);
+export const IMAGE_ENTITY_TABLES = new Set<TableId>(["announcements", "projects", "etkinlikler", "portfolios"]);
 
 /** Public-site query caches to invalidate after a write to each table (see hooks/useContent). */
 const PUBLIC_QUERY_KEYS: Record<TableId, QueryKey[]> = {
@@ -492,6 +531,7 @@ const PUBLIC_QUERY_KEYS: Record<TableId, QueryKey[]> = {
   oduller: [["awards"]],
   ortaklar: [["partners"], ["publicCounts"]],
   site_ayarlari: [["siteSettings"]],
+  portfolios: [["portfolios"]],
 };
 
 export function publicQueryKeys(table: TableId): QueryKey[] {

@@ -137,3 +137,19 @@ first). Added `NotFound` catch-all route and `/portfolyo[/:id]` → `/portfolyol
 Logic: Verified in prod: three SELECT policies present, anon listing still returns nothing,
 public image URLs still served. Unknown URLs previously rendered an empty page.
 Debt: 12 orphaned storage files to delete (needs admin session or secret key).
+
+## 2026-11-02 — Portfolios managed from the admin panel (branch, not yet in production)
+
+Change: Migration `20261102140000_portfolios.sql` (table, RLS, `content_images` + admin RPC branches);
+`scripts/import-portfolios.mjs` (moves the 11 hard-coded portfolios + 25 images into Supabase as a
+normal admin); `src/lib/portfolios.ts` replaces `src/data/portfolios.ts`; admin table "Portfolyolar"
+with new field types `lines` (text[]) and `authors` (jsonb); gallery fields gain an upload button
+(content-images bucket); panel-uploaded gallery files are deleted when dropped or when the record
+is deleted; slug validated in the browser. `scripts/gen-types.sh --local`.
+Logic: Replaced RPCs differ from production only by the new branches (verified with diff).
+Locally: import idempotent (11 portfolios, 22 gallery + 3 avatar files); public portfolio pages
+from the DB are 0 text / 0 pixel diff vs live; end-to-end admin test (create with uploads,
+public render, drop image, invalid input, delete) passes with storage cleaned up; other tables'
+write scenarios unchanged vs the old panel.
+Debt: Needs production migration + import before merging (the page reads the new table).
+Afterwards `public/portfolio/` can be removed. Gallery files uploaded in a cancelled form remain.

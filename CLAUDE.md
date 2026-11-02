@@ -112,6 +112,16 @@ npx vite build --mode localdb --outDir dist-localdb && npx vite preview --outDir
 `.env.local-admin` holds the generated test admin login. Both are git-ignored. Cron jobs,
 Vault secrets and the edge function are not restored, so "Şimdi eşitle" fails locally by design.
 
+### Adding an admin-managed table
+
+1. Migration in `supabase/migrations/`: table + RLS read policy + grants, a branch in
+   `admin_get_table_meta`, and — if it has a gallery — the `content_images` entity check,
+   `admin_assert_image_entity` and `admin_delete_record`. Diff the replaced functions against
+   the previous definitions (`diff --strip-trailing-cr`) so only the new branch changes.
+2. `scripts/restore-local.sh`, then `scripts/gen-types.sh --local`.
+3. Table definition in `src/admin/tables.ts` (plus `IMAGE_ENTITY_TABLES` / `publicQueryKeys`).
+4. Test on the local stack, then apply to production after a backup.
+
 ### Intentional deviations from the live site
 
 Bugs found while porting are fixed in **separate commits** so `compare-live` differences
@@ -136,7 +146,7 @@ after any schema change (needs `.env.backup`).
 |---|---|
 | `/` | Home (hero video `videos/hero-background.mp4`) |
 | `/projeler`, `/projeler/arastirma/:id`, `/projeler/staj/:slug` | Research & internship projects |
-| `/portfolyolar` | Portfolios — **static data in `src/data/portfolios.ts`, not Supabase** (editing needs a commit + deploy) |
+| `/portfolyolar` | Portfolios — `portfolios` table + `content_images` gallery, managed in the admin panel (`src/lib/portfolios.ts`) |
 | `/ekip` | Team |
 | `/yayinlar` | Publications |
 | `/duyurular` | Announcements |
@@ -156,7 +166,8 @@ deep links work without rewrites.
 | `nznvqfjwwvwrxiiwufgg` | Internship projects only (`internshipProjects` module): `projects` table with `project_students`, bucket `project-media` |
 
 **Main project content tables:** `announcements`, `etkinlikler`, `ekip`, `yayinlar`,
-`projects`, `arastirma_alanlari`, `oduller`, `ortaklar`, `site_ayarlari`, `content_images`.
+`projects`, `arastirma_alanlari`, `oduller`, `ortaklar`, `site_ayarlari`, `content_images`,
+`portfolios` (added by migration `20261102140000_portfolios.sql`).
 Common columns: `is_published`, `sort_order`, `created_at`.
 
 **Admin RPCs** (generic CRUD over tables, `p_table` argument): `admin_me`,
