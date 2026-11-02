@@ -17,8 +17,8 @@ backend server — all data access is Supabase client calls guarded by RLS and
 ## Current State — Migration In Progress
 
 The project was handed over by the previous developer. Until now it was deployed by
-editing locally and uploading `dist/` over FTP to the university server
-(193.140.253.203, Apache/IIS); there was **no git repository**.
+editing locally and uploading `dist/` over FTP to the university server (Apache);
+there was **no git repository**.
 
 Goals of the handover:
 1. Put the project in a git repository.
@@ -185,9 +185,11 @@ RPC functions, `auth.users`, storage objects and the edge function.
 
 ## Secrets & Safety Rules
 
-- **Never commit** `.env*`, connection strings, `service_role` keys, FTP or Supabase
-  account passwords. Credentials were shared over chat — treat them as compromised and
-  rotate after migration.
+- **This repository is public.** Never commit `.env*`, connection strings, `service_role`/
+  secret keys, tokens, passwords, server addresses, backups or personal data. Publishable
+  Supabase keys are public by design and may appear in code.
+- Do not document unfixed security weaknesses here or in `supabase/README.md`; track them
+  privately (see `SECURITY.md`) and only describe them once fixed.
 - `.env.backup` (local only, git-ignored) holds DB connection strings (`MAIN_DB_URL`,
   `STAJ_DB_URL`, session pooler on `aws-0-<region>`) used by `scripts/backup.sh main|staj`.
   Output goes to git-ignored `backups/` — it contains user data, never share it.

@@ -76,12 +76,10 @@ Deploy: `supabase functions deploy instagram-sync --project-ref gaflirrelweuphsi
 Functions: `set_updated_at` (trigger), `rls_auto_enable`. No migrations, no edge functions.
 Content is edited directly in the Supabase dashboard (no admin UI).
 
-## Advisor notes (security, 2026-11-02)
+## Security model
 
-- `SECURITY DEFINER` admin RPCs callable by `authenticated` — by design. Verified
-  2026-11-02: every data RPC (`admin_me`, list/create/update/delete/move, image RPCs)
-  calls `admin_require_admin()`; `admin_get_instagram_sync_status` checks `admin_users`
-  inline; `admin_can_manage_research_images` only returns a boolean; the remaining
-  helpers are not executable by `anon`/`authenticated`. Keep this invariant.
-- `rls_auto_enable()` in `staj-projeleri` is executable by `anon` — should be revoked.
-- `pg_net` installed in `public` schema; leaked-password protection disabled in Auth.
+- RLS is enabled on every table. `anon` and `authenticated` can only **read published
+  rows**; every write goes through `SECURITY DEFINER` RPCs that start with
+  `admin_require_admin()` (or check `admin_users` inline). Keep this invariant for new RPCs.
+- Storage writes are limited to admins by policies on `storage.objects`.
+- Run the Supabase security advisors (Dashboard → Advisors) after any schema change.

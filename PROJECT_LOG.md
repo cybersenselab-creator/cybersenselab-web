@@ -39,7 +39,7 @@ Logic: The schema only existed inside Supabase; recording it in the repo removes
 single-person dependency. Admin RPC authorization was verified, not assumed.
 Debt: `types.ts` is reconstructed (not type-checked with Deno yet). Full `pg_dump` of the
 main project still missing. Instagram sync failing since 2026-11-01 (`instagram_http_400`,
-likely expired 60-day token). `staj-projeleri` `rls_auto_enable` executable by anon.
+likely expired 60-day token).
 
 ## 2026-11-02 — Full Supabase backups
 
@@ -118,3 +118,14 @@ nothing (no SELECT policy) — reproduced, fixed by migration, verified (admin d
 still cannot list/delete).
 Debt: Migration not applied to production yet; then the 12 orphaned files can be cleaned up.
 Uploaded image bytes (resize/background removal) not byte-compared between panels.
+
+## 2026-11-02 — Repository made public
+
+Change: Added `SECURITY.md`; removed the FTP server address and open-weakness notes from public
+docs; CLAUDE.md now states the repo is public and what must never be committed. Enabled GitHub
+secret scanning, push protection and Dependabot alerts.
+Logic: Full history scanned before publishing: no passwords, secret/service keys, tokens,
+connection strings, dumps or `.env` files were ever committed, so no history rewrite was needed.
+Publishable Supabase keys are public by design (RLS + admin-only RPCs enforce access).
+Debt: Production follow-ups tracked privately (auth sign-up setting, storage policy migration,
+credential rotation).
