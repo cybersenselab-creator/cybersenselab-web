@@ -1,0 +1,116 @@
+import { n as e } from "./vendor-dist.js";
+var t = e();
+function n(e) {
+  let t = (e || ``).trim().split(/\s+/).filter(Boolean);
+  return t.length === 0
+    ? `?`
+    : t.length === 1
+      ? t[0].charAt(0).toUpperCase()
+      : (t[0].charAt(0) + t[t.length - 1].charAt(0)).toUpperCase();
+}
+var r = [
+  `from-cyan/25 to-cyan/5 text-cyan`,
+  `from-indigo-400/25 to-indigo-400/5 text-indigo-500`,
+  `from-emerald-400/25 to-emerald-400/5 text-emerald-600`,
+  `from-amber-400/25 to-amber-400/5 text-amber-600`,
+  `from-rose-400/25 to-rose-400/5 text-rose-500`,
+  `from-sky-400/25 to-sky-400/5 text-sky-600`,
+];
+function i({ member: e }) {
+  let i =
+      r[
+        (e.name || ``).split(``).reduce((e, t) => e + t.charCodeAt(0), 0) %
+          r.length
+      ],
+    a = /^https?:\/\//i.test(e.avatar_icon || ``);
+  return (0, t.jsxs)(`div`, {
+    className: `group bg-white border border-gray-100 rounded-xl p-6\r
+                    hover:border-gray-200 hover:shadow-lg transition-all duration-300 text-center`,
+    children: [
+      (0, t.jsx)(`div`, {
+        className: `mx-auto w-16 h-16 rounded-full bg-gradient-to-br flex items-center justify-center
+                       font-bold text-xl overflow-hidden ${i}`,
+        children: a
+          ? (0, t.jsx)(`img`, {
+              src: e.avatar_icon,
+              alt: `${e.name} profil fotoğrafı`,
+              className: `w-full h-full object-cover object-[center_30%]`,
+              loading: `lazy`,
+            })
+          : n(e.name),
+      }),
+      (0, t.jsxs)(`div`, {
+        className: `mt-4`,
+        children: [
+          (0, t.jsx)(`h3`, {
+            className: `font-semibold text-navy text-[15px] leading-snug`,
+            children: e.name,
+          }),
+          (0, t.jsx)(`p`, {
+            className: `mt-0.5 text-cyan text-xs font-medium`,
+            children: e.role,
+          }),
+          e.expertise &&
+            (0, t.jsx)(`p`, {
+              className: `text-gray-400 text-xs mt-1.5`,
+              children: e.expertise,
+            }),
+          (0, t.jsxs)(`div`, {
+            className: `flex items-center justify-center gap-1.5 mt-4 opacity-0 group-hover:opacity-100 transition-opacity`,
+            children: [
+              e.email &&
+                (0, t.jsx)(`a`, {
+                  href: `mailto:${e.email}`,
+                  className: `w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center\r
+                       text-gray-400 hover:text-cyan transition-colors text-[11px]`,
+                  "aria-label": `E-posta`,
+                  children: (0, t.jsx)(`i`, { className: `fa fa-envelope` }),
+                }),
+              e.scholar_url &&
+                (0, t.jsx)(`a`, {
+                  href: e.scholar_url,
+                  target: `_blank`,
+                  rel: `noopener`,
+                  className: `w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center\r
+                          text-gray-400 hover:text-cyan transition-colors text-[10px] font-bold`,
+                  "aria-label": `Google Scholar`,
+                  children: `G`,
+                }),
+              e.linkedin_url &&
+                (0, t.jsx)(`a`, {
+                  href: e.linkedin_url,
+                  target: `_blank`,
+                  rel: `noopener`,
+                  className: `w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center\r
+                          text-gray-400 hover:text-cyan transition-colors text-[11px]`,
+                  "aria-label": `LinkedIn`,
+                  children: (0, t.jsx)(`i`, { className: `fab fa-linkedin` }),
+                }),
+              e.github_url &&
+                (0, t.jsx)(`a`, {
+                  href: e.github_url,
+                  target: `_blank`,
+                  rel: `noopener`,
+                  className: `w-7 h-7 rounded-md hover:bg-gray-100 flex items-center justify-center\r
+                          text-gray-400 hover:text-cyan transition-colors text-[11px]`,
+                  "aria-label": `GitHub`,
+                  children: (0, t.jsx)(`i`, { className: `fab fa-github` }),
+                }),
+              e.website_url &&
+                (0, t.jsx)(`a`, {
+                  href: e.website_url,
+                  target: `_blank`,
+                  rel: `noopener`,
+                  className: `w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center\r
+                          text-gray-400 hover:bg-cyan hover:text-navy transition-all text-xs`,
+                  "aria-label": `Web`,
+                  children: (0, t.jsx)(`i`, { className: `fa fa-globe` }),
+                }),
+            ],
+          }),
+        ],
+      }),
+    ],
+  });
+}
+export { i as t };

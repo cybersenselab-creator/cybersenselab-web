@@ -1,0 +1,85 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ported from the live bundle (reference/assets/index.css). */
+
+@layer base {
+  body {
+    @apply bg-white text-gray-900 font-sans;
+  }
+
+  ::selection {
+    @apply text-navy;
+    background-color: rgb(0 200 232 / 0.3);
+  }
+
+  :focus-visible {
+    outline: 2px solid rgb(0 200 232 / 0.6);
+    outline-offset: 2px;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      scroll-behavior: auto !important;
+      transition-duration: 0.01ms !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(0 200 232 / 0.4);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(0 200 232 / 0.6);
+  }
+}
+
+@layer components {
+  .btn-cyber {
+    @apply inline-flex items-center gap-2 rounded-lg bg-cyan px-6 py-3 text-sm font-semibold text-navy transition-all duration-200;
+  }
+  .btn-cyber:hover {
+    @apply bg-cyan-dim text-white;
+  }
+  .btn-cyber:active {
+    @apply scale-[0.98];
+  }
+  .btn-cyber:disabled {
+    @apply cursor-not-allowed opacity-50;
+  }
+
+  .btn-outline {
+    @apply inline-flex items-center gap-2 rounded-lg border border-cyan/60 px-6 py-3 text-sm font-semibold text-cyan transition-all duration-200;
+  }
+  .btn-outline:hover {
+    @apply bg-cyan/10;
+  }
+  .btn-outline:active {
+    @apply scale-[0.98];
+  }
+}
+
+@layer utilities {
+  .scrollbar-hidden {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hidden::-webkit-scrollbar {
+    display: none;
+  }
+}
