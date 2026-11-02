@@ -34,7 +34,7 @@ Goals of the handover:
 | Supabase ownership | Done — both projects in the lab Supabase org (`odnwsnbwbcuhkedbaxxe`). Claude Code has read-only Supabase MCP access |
 | Vercel deploy | Done 2026-11-02 — project `cybersenselab-web` (team `cyber-sense-lab`, lab account), auto-deploys `main`; https://cybersenselab-web.vercel.app verified page-by-page against live with `compare-live` (`LOCAL_URL=` the Vercel URL) |
 | Admin panel | Ported 2026-11-02; verified against the old panel on the same local DB (UI + 12 write scenarios identical) |
-| Storage-delete fix | Migration `supabase/migrations/20261102120000_admin_select_storage_images.sql` tested locally — **not yet applied to production** (needs approval + fresh backup) |
+| Storage-delete fix | Migration `20261102120000_admin_select_storage_images.sql` applied to production 2026-11-02 (after backup `20261102-155451`). 12 orphaned files still to clean up |
 | DNS cutover | Pending — owner will handle DNS and FTP server retirement |
 
 Update this table as steps complete.
@@ -121,7 +121,8 @@ stay explainable. Keep this list current:
 |---|---|---|---|
 | Nav active link | Never highlighted (Apache redirects `/x` → `/x/`, path check fails) | Highlighted | Hosting artefact, not intended |
 | `/projeler?tur=staj` cards | Cover images broken (`render/image` → 403) | Original image URLs | Image transformations are a paid Supabase feature |
-| Admin image replace/delete | Old files never removed from storage (no SELECT policy → `remove()` deletes 0 rows silently) | Fixed by migration (DB-side, pending prod) | 11 orphaned research icons + 1 team photo in prod |
+| Unknown routes | Empty page between header and footer | `NotFound` page; `/portfolyo[/:id]` redirects to `/portfolyolar` | No catch-all route existed |
+| Admin image replace/delete | Old files never removed from storage (no SELECT policy → `remove()` deletes 0 rows silently) | Fixed by migration (applied to prod) | 11 orphaned research icons + 1 team photo in prod |
 
 Data hooks live in `src/hooks/useContent.ts` (1:1 with the bundle's `useSupabase.js`);
 row types come from `src/lib/database.types.ts` — regenerate with `npm run types`

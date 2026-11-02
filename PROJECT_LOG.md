@@ -129,3 +129,11 @@ connection strings, dumps or `.env` files were ever committed, so no history rew
 Publishable Supabase keys are public by design (RLS + admin-only RPCs enforce access).
 Debt: Production follow-ups tracked privately (auth sign-up setting, storage policy migration,
 credential rotation).
+
+## 2026-11-02 — Storage fix in production; 404 page
+
+Change: Applied `20261102120000_admin_select_storage_images.sql` to production (backup taken
+first). Added `NotFound` catch-all route and `/portfolyo[/:id]` → `/portfolyolar` redirects.
+Logic: Verified in prod: three SELECT policies present, anon listing still returns nothing,
+public image URLs still served. Unknown URLs previously rendered an empty page.
+Debt: 12 orphaned storage files to delete (needs admin session or secret key).

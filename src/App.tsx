@@ -1,5 +1,5 @@
 import { lazy } from "react";
-import { Route, Routes } from "react-router";
+import { Navigate, Route, Routes, useParams } from "react-router";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 
@@ -15,6 +15,13 @@ const Contact = lazy(() => import("./pages/Contact"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Login = lazy(() => import("./pages/Login"));
 const Admin = lazy(() => import("./pages/Admin"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Singular "/portfolyo" is a common mistype of "/portfolyolar".
+function PortfolioAlias() {
+  const { id } = useParams();
+  return <Navigate to={id ? `/portfolyolar/${id}` : "/portfolyolar"} replace />;
+}
 
 export default function App() {
   return (
@@ -34,6 +41,9 @@ export default function App() {
         <Route path="/gizlilik-ve-kvkk" element={<Privacy />} />
         <Route path="/login" element={<Login />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/portfolyo" element={<PortfolioAlias />} />
+        <Route path="/portfolyo/:id" element={<PortfolioAlias />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   );
