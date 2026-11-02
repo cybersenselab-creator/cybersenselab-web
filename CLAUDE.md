@@ -27,6 +27,7 @@ Goals of the handover:
 
 | Item | Status |
 |---|---|
+| Git repository | Done — `github.com/cybersenselab-creator/cybersenselab-web` (private). Owned by the lab GitHub account (lab Gmail); developers join as collaborators |
 | Live site snapshot (`ftp-snapshot/`) | Done — full FTP mirror, 292 files. **Build output only, not source.** |
 | Original source code | **Treated as unavailable.** The app is rebuilt from scratch using `ftp-snapshot/` as the spec (same routes, design, texts and Supabase calls) |
 | Supabase backup (`pg_dump` + storage) | Pending — needs connection strings / `service_role` keys |
