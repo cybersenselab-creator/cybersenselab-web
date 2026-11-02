@@ -93,6 +93,16 @@ npm run build && npx vite preview --port 4180 &
 node scripts/compare-live.mjs /ekip    # CHROMIUM_PATH=… to reuse a cached browser
 ```
 
+### Intentional deviations from the live site
+
+Bugs found while porting are fixed in **separate commits** so `compare-live` differences
+stay explainable. Keep this list current:
+
+| Where | Live behaviour | Rebuilt | Why |
+|---|---|---|---|
+| Nav active link | Never highlighted (Apache redirects `/x` → `/x/`, path check fails) | Highlighted | Hosting artefact, not intended |
+| `/projeler?tur=staj` cards | Cover images broken (`render/image` → 403) | Original image URLs | Image transformations are a paid Supabase feature |
+
 Data hooks live in `src/hooks/useContent.ts` (1:1 with the bundle's `useSupabase.js`);
 row types come from `src/lib/database.types.ts` — regenerate with `npm run types`
 after any schema change (needs `.env.backup`).

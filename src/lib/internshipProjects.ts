@@ -6,13 +6,6 @@ import { getInternshipSupabase } from "./internshipSupabase";
 // normalized defensively (String/Number coercion, empty → undefined) because the data is
 // edited by hand in the Supabase dashboard. Ported from reference/assets/internshipProjects.js.
 
-// Bumped to bust the CDN cache of transformed cover images.
-const COVER_VERSION = "20260909-8x3";
-const COVER_WIDTH = 800;
-const COVER_HEIGHT = 300;
-const OBJECT_PATH = "/storage/v1/object/public/project-media/";
-const RENDER_PATH = "/storage/v1/render/image/public/project-media/";
-
 export type Student = { id: string; name: string; department?: string; avatarUrl?: string; githubUrl?: string };
 export type ProjectMedia = { id: string; type: string; url: string; alt: string; caption?: string; order: number };
 export type Technology = { id: string; name: string; category?: string };
@@ -66,20 +59,19 @@ function heroUrl(row: Row, media: ProjectMedia[]) {
   return mediaUrl(row.cover_image_url) || media.find((m) => m.type === "hero")?.url;
 }
 
-/** List cards use a resized cover via Supabase image transformations; falls back to `<slug>/cover.png`. */
+/**
+ * List-card cover: the hero image, else `<slug>/cover.png` in storage.
+ *
+ * The live site requested a resized copy via `/storage/v1/render/image/…`, but image
+ * transformations are a paid Supabase feature and return 403 on the Free plan, so every
+ * card showed a broken image. The original object URL is used instead (fixed 2026-11-02).
+ */
 function cardCoverUrl(row: Row, media: ProjectMedia[], storageBase?: string) {
-  const hero = heroUrl(row, media);
   const slug = text(row.slug);
-  const url =
-    hero || (storageBase && slug ? `${storageBase.replace(/\/$/, "")}/${encodeURIComponent(slug)}/cover.png` : undefined);
-  if (!url || !url.includes(OBJECT_PATH)) return url;
-  const resized = new URL(url.replace(OBJECT_PATH, RENDER_PATH));
-  resized.searchParams.set("width", String(COVER_WIDTH));
-  resized.searchParams.set("height", String(COVER_HEIGHT));
-  resized.searchParams.set("resize", "contain");
-  resized.searchParams.set("quality", "75");
-  resized.searchParams.set("v", COVER_VERSION);
-  return resized.toString();
+  return (
+    heroUrl(row, media) ||
+    (storageBase && slug ? `${storageBase.replace(/\/$/, "")}/${encodeURIComponent(slug)}/cover.png` : undefined)
+  );
 }
 
 const byOrder = (a: Row, b: Row) => Number(a.display_order || 0) - Number(b.display_order || 0);

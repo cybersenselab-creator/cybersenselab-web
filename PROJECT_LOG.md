@@ -10,7 +10,7 @@
 | Layout (header/footer) | `src/components/layout/` | Ported — Header, Footer, ScrollTopButton, page transitions |
 | Shared UI / cards | `src/components/ui/`, `src/components/cards/` | Ported — LabIcon (auto-converted), UIStates, Skeletons, SectionHeader, Reveal, News/Team/PublicationCard |
 | Data hooks / types | `src/hooks/useContent.ts`, `src/lib/database.types.ts` | Ported; types generated from live schema |
-| Pages | `src/pages/*.tsx` | Home ported (verified identical to live); others placeholders |
+| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Pending: Portfolios, Contact, Login, Admin |
 | Deploy config | `vercel.json` | Done, not yet deployed |
 | Supabase backend record | `supabase/` | Inventory + `instagram-sync` source (types reconstructed) |
 | Reference spec | `reference/assets/` | Formatted live bundles |
@@ -63,3 +63,14 @@ LabIcon's 107 SVG elements were converted by script, not by hand.
 Debt: `border-3` spinner class is a no-op in Tailwind v3 (kept to match live). Remaining
 pages: Team, Projects (+ 2 detail pages), Portfolios, Publications, Announcements, Events,
 Contact, Privacy, Login, Admin.
+
+## 2026-11-02 — Inner pages: Privacy, Publications, Team, Events, Announcements, Projects
+
+Change: Ported 7 routes plus 6 detail URLs; shared `PageHeader`, `AnnouncementModal`,
+`ProjectDetailView`/`ProjectDetailPage`, internship data layer (`src/lib/internshipProjects.ts`).
+Logic: Bundles were decompiled to JSX with a Babel script (scratch tool) and then renamed by hand;
+every route verified 0 text / 0 pixel diff against live (desktop + mobile).
+Fixed (separate commit): internship cover images used Supabase image transformations
+(403 on Free plan) — now original object URLs. Note: covers are 1.7–2.2 MB PNGs; worth
+compressing in storage later.
+Debt: Portfolios, Contact, Login, Admin remain.
