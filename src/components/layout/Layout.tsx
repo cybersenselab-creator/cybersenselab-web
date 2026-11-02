@@ -1,31 +1,33 @@
 import { Suspense } from "react";
-import { NavLink, Outlet } from "react-router";
-import { NAV_ITEMS } from "../../lib/navigation";
+import { Outlet, useLocation } from "react-router";
+import { AnimatePresence, motion } from "framer-motion";
+import Header from "./Header";
+import Footer from "./Footer";
+import ScrollTopButton from "./ScrollTopButton";
+import { PageSkeleton } from "../ui/Skeleton";
 
-// TODO: port the real header/footer from reference/assets/index.js (~line 19432, `Jm`).
 export default function Layout() {
+  const location = useLocation();
   return (
-    <div className="flex min-h-screen flex-col">
-      <header className="bg-navy text-white">
-        <nav className="mx-auto flex max-w-7xl flex-wrap items-center gap-6 px-6 py-4">
-          <img src="/logos/cybersense-shield.png" alt="CyberSense" className="h-8 w-8" />
-          {NAV_ITEMS.map((item) => (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              end={item.path === "/"}
-              className={({ isActive }) => (isActive ? "text-cyan" : "text-white/80 hover:text-white")}
-            >
-              {item.label}
-            </NavLink>
-          ))}
-        </nav>
-      </header>
+    <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1">
-        <Suspense fallback={<div className="p-12 text-center text-gray-500">Yükleniyor…</div>}>
-          <Outlet />
+        <Suspense fallback={<PageSkeleton />}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
         </Suspense>
       </main>
+      <Footer />
+      <ScrollTopButton />
     </div>
   );
 }

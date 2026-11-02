@@ -7,8 +7,10 @@
 | Auth | `src/hooks/useAuth.tsx` | Ported from bundle |
 | Supabase clients | `src/lib/supabase.ts`, `src/lib/internshipSupabase.ts` | Done (env-driven) |
 | Styles / theme | `tailwind.config.js`, `src/styles/index.css` | Ported (navy/cyan, btn-cyber, btn-outline) |
-| Layout (header/footer) | `src/components/layout/Layout.tsx` | Placeholder |
-| Pages | `src/pages/*.tsx` | All placeholders |
+| Layout (header/footer) | `src/components/layout/` | Ported — Header, Footer, ScrollTopButton, page transitions |
+| Shared UI / cards | `src/components/ui/`, `src/components/cards/` | Ported — LabIcon (auto-converted), UIStates, Skeletons, SectionHeader, Reveal, News/Team/PublicationCard |
+| Data hooks / types | `src/hooks/useContent.ts`, `src/lib/database.types.ts` | Ported; types generated from live schema |
+| Pages | `src/pages/*.tsx` | Home ported (verified identical to live); others placeholders |
 | Deploy config | `vercel.json` | Done, not yet deployed |
 | Supabase backend record | `supabase/` | Inventory + `instagram-sync` source (types reconstructed) |
 | Reference spec | `reference/assets/` | Formatted live bundles |
@@ -49,3 +51,15 @@ retries. Verified every table's row count against live (exact match) and 71/71 +
 storage files.
 Debt: No test restore into a scratch database yet. Vault secret values and edge-function
 secrets are not exportable — must be re-entered by hand on any new project.
+
+## 2026-11-02 — Shared components, layout and Home page
+
+Change: Ported shared UI, cards, data hooks, header/footer/layout and the Home page
+(`src/pages/home/*`). Added `npm run types` (`scripts/gen-types.sh`) and
+`scripts/compare-live.mjs` (Playwright text + pixel diff against the live site).
+Logic: Markup/classes/texts/queries copied 1:1 from the bundle so the rebuilt site is
+indistinguishable; verified Home with 0 text and 0 pixel differences on desktop and mobile.
+LabIcon's 107 SVG elements were converted by script, not by hand.
+Debt: `border-3` spinner class is a no-op in Tailwind v3 (kept to match live). Remaining
+pages: Team, Projects (+ 2 detail pages), Portfolios, Publications, Announcements, Events,
+Contact, Privacy, Login, Admin.

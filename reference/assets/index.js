@@ -19921,7 +19921,7 @@ var Ym = (0, m.lazy)(() =>
   ),
   th = (0, m.lazy)(() =>
     o(
-      () => import(`./Announcements-Bn-xxdkT-p20261026-v2.js`),
+      () => import(`./Announcements.js`),
       __vite__mapDeps([19, 1, 6, 2, 3, 5, 4, 7, 8]),
     ),
   ),

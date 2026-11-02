@@ -15,3 +15,6 @@ ftp-snapshot/
 
 # Database dumps (contain user data) — never commit
 backups/
+
+# Live-vs-local comparison output
+.compare/

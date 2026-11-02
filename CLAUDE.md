@@ -83,8 +83,19 @@ names meaningful ones; add types. Shared bundles to port first: `useSupabase.js`
 `useQuery.js`, `utils.js`, `UIStates.js`, `SectionHeader.js`, `Reveal.js`, cards,
 `LabIcon.js`. In `reference/assets/index.js` only two regions are app code — the
 Supabase client + `AuthProvider` (~line 13195) and header/footer/layout + router
-(~line 19432 to end); the rest is vendor code. Compare against the live site after
-each page.
+(~line 19432 to end); the rest is vendor code.
+
+**A page counts as ported only when `scripts/compare-live.mjs` reports 0 text and 0 pixel
+differences** against the live site (desktop + mobile):
+
+```bash
+npm run build && npx vite preview --port 4180 &
+node scripts/compare-live.mjs /ekip    # CHROMIUM_PATH=… to reuse a cached browser
+```
+
+Data hooks live in `src/hooks/useContent.ts` (1:1 with the bundle's `useSupabase.js`);
+row types come from `src/lib/database.types.ts` — regenerate with `npm run types`
+after any schema change (needs `.env.backup`).
 
 ## Architecture
 
