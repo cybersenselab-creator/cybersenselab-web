@@ -10,7 +10,7 @@
 | Layout (header/footer) | `src/components/layout/` | Ported — Header, Footer, ScrollTopButton, page transitions |
 | Shared UI / cards | `src/components/ui/`, `src/components/cards/` | Ported — LabIcon (auto-converted), UIStates, Skeletons, SectionHeader, Reveal, News/Team/PublicationCard |
 | Data hooks / types | `src/hooks/useContent.ts`, `src/lib/database.types.ts` | Ported; types generated from live schema |
-| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Portfolios (+11 details), Contact, Login. Pending: Admin |
+| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Portfolios (+11 details), Contact, Login, Admin. All routes ported |
 | Deploy config | `vercel.json` | Done, not yet deployed |
 | Supabase backend record | `supabase/` | Inventory + `instagram-sync` source (types reconstructed) |
 | Reference spec | `reference/assets/` | Formatted live bundles |
@@ -103,3 +103,18 @@ Logic: Ran `compare-live` with `LOCAL_URL` set to the Vercel URL for 14 represen
 0 text differences everywhere; pixel differences only on `/projeler?tur=staj` (intentional cover
 fix) and inside Contact's Google Maps iframe. Security headers/CSP served as configured.
 Debt: DNS still points to the FTP server. Admin panel not ported.
+
+## 2026-11-02 — Admin panel, local Supabase, storage-delete fix
+
+Change: Admin panel ported into `src/admin/*` + `src/pages/Admin.tsx`. Local Supabase stack
+(`supabase/config.toml`) with `scripts/restore-local.sh` (restore latest backup, apply
+`supabase/migrations`, create a local test admin). Migration
+`20261102120000_admin_select_storage_images.sql` adds admin SELECT policies on the three image buckets.
+Logic: Old panel (live bundle re-pointed at the local stack) vs new panel on the same restored DB:
+all 9 tables × list/new/edit forms 0 text / 0 pixel diff; 12 write scenarios (create/edit/delete,
+gallery images, photo upload/replace/delete, icon upload, settings key lock, Instagram trigger)
+produce identical DB + storage state and toasts. Found that storage `remove()` silently deleted
+nothing (no SELECT policy) — reproduced, fixed by migration, verified (admin deletes work, anon
+still cannot list/delete).
+Debt: Migration not applied to production yet; then the 12 orphaned files can be cleaned up.
+Uploaded image bytes (resize/background removal) not byte-compared between panels.

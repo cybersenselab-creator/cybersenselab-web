@@ -33,7 +33,9 @@ Goals of the handover:
 | Supabase backup (`pg_dump` + storage) | Done 2026-11-02 — both projects via `scripts/backup.sh` (row counts verified against live; storage 71/71 + 10/10 files). Re-run before any schema change or migration |
 | Supabase ownership | Done — both projects in the lab Supabase org (`odnwsnbwbcuhkedbaxxe`). Claude Code has read-only Supabase MCP access |
 | Vercel deploy | Done 2026-11-02 — project `cybersenselab-web` (team `cyber-sense-lab`, lab account), auto-deploys `main`; https://cybersenselab-web.vercel.app verified page-by-page against live with `compare-live` (`LOCAL_URL=` the Vercel URL) |
-| DNS cutover | Pending. Old FTP server stays live until the admin panel is ported and the switch is approved |
+| Admin panel | Ported 2026-11-02; verified against the old panel on the same local DB (UI + 12 write scenarios identical) |
+| Storage-delete fix | Migration `supabase/migrations/20261102120000_admin_select_storage_images.sql` tested locally — **not yet applied to production** (needs approval + fresh backup) |
+| DNS cutover | Pending — owner will handle DNS and FTP server retirement |
 
 Update this table as steps complete.
 
@@ -68,7 +70,9 @@ TanStack Query 5, react-hot-toast 2, supabase-js 2, Tailwind **v3** (not v4).
 | Path | Purpose |
 |---|---|
 | `src/` | The rebuilt app (TypeScript) |
-| `src/pages/` | One file per route; placeholders (`PagePlaceholder`) until ported |
+| `src/pages/` | One file per route |
+| `src/admin/` | Admin panel modules: table definitions, record save, storage uploads, Instagram sync card, form modal |
+| `supabase/migrations/` | SQL changes for production, applied manually after approval (not via CLI push) |
 | `src/lib/supabase.ts`, `src/lib/internshipSupabase.ts` | Clients for the two Supabase projects |
 | `src/hooks/useAuth.tsx` | `AuthProvider` — session is valid only if `admin_me` RPC succeeds (ported 1:1) |
 | `public/` | Static files served as-is: `logos/`, `videos/`, `shield.svg` |
@@ -94,6 +98,20 @@ npm run build && npx vite preview --port 4180 &
 node scripts/compare-live.mjs /ekip    # CHROMIUM_PATH=… to reuse a cached browser
 ```
 
+### Local Supabase (admin panel testing)
+
+Never test admin writes against production. A local stack restored from the latest backup:
+
+```bash
+npx supabase start -x studio,imgproxy,mailpit,edge-runtime,logflare,vector,supavisor,realtime,postgres-meta
+scripts/restore-local.sh      # reset → restore backup → apply supabase/migrations → local test admin
+npx vite build --mode localdb --outDir dist-localdb && npx vite preview --outDir dist-localdb --port 4182
+```
+
+`.env.localdb` points the build at `http://127.0.0.1:54321` (standard local keys);
+`.env.local-admin` holds the generated test admin login. Both are git-ignored. Cron jobs,
+Vault secrets and the edge function are not restored, so "Şimdi eşitle" fails locally by design.
+
 ### Intentional deviations from the live site
 
 Bugs found while porting are fixed in **separate commits** so `compare-live` differences
@@ -103,6 +121,7 @@ stay explainable. Keep this list current:
 |---|---|---|---|
 | Nav active link | Never highlighted (Apache redirects `/x` → `/x/`, path check fails) | Highlighted | Hosting artefact, not intended |
 | `/projeler?tur=staj` cards | Cover images broken (`render/image` → 403) | Original image URLs | Image transformations are a paid Supabase feature |
+| Admin image replace/delete | Old files never removed from storage (no SELECT policy → `remove()` deletes 0 rows silently) | Fixed by migration (DB-side, pending prod) | 11 orphaned research icons + 1 team photo in prod |
 
 Data hooks live in `src/hooks/useContent.ts` (1:1 with the bundle's `useSupabase.js`);
 row types come from `src/lib/database.types.ts` — regenerate with `npm run types`

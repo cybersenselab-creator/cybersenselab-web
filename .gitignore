@@ -18,3 +18,9 @@ backups/
 
 # Live-vs-local comparison output
 .compare/
+
+# Build against the local Supabase stack
+dist-localdb/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
