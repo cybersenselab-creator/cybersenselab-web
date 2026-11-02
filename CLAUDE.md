@@ -75,7 +75,7 @@ TanStack Query 5, react-hot-toast 2, supabase-js 2, Tailwind **v3** (not v4).
 | `supabase/migrations/` | SQL changes for production, applied manually after approval (not via CLI push) |
 | `src/lib/supabase.ts`, `src/lib/internshipSupabase.ts` | Clients for the two Supabase projects |
 | `src/hooks/useAuth.tsx` | `AuthProvider` — session is valid only if `admin_me` RPC succeeds (ported 1:1) |
-| `public/` | Static files served as-is: `logos/`, `videos/`, `shield.svg` |
+| `public/` | Static files served as-is: `logos/`, `videos/`, `shield.svg` (portfolio images live in Supabase storage) |
 | `reference/assets/` | **Prettier-formatted live bundles** — the spec for porting. Read-only |
 | `vercel.json` | SPA rewrite + security headers/CSP ported from `.htaccess` |
 | `ftp-snapshot/` | Raw FTP mirror, git-ignored, local only |

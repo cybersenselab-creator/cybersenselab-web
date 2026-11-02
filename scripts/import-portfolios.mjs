@@ -1,3 +1,6 @@
+// DONE 2026-11-02 in production (11 portfolios, 25 files). Kept for history: the source images
+// were removed from public/portfolio afterwards, so it cannot run again as-is.
+//
 // One-off import of the portfolios that used to be hard-coded in the frontend
 // (reference/assets/portfolioData.js + public/portfolio/*) into Supabase.
 //

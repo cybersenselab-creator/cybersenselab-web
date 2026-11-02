@@ -153,3 +153,12 @@ public render, drop image, invalid input, delete) passes with storage cleaned up
 write scenarios unchanged vs the old panel.
 Debt: Needs production migration + import before merging (the page reads the new table).
 Afterwards `public/portfolio/` can be removed. Gallery files uploaded in a cancelled form remain.
+
+## 2026-11-02 — Portfolios live from Supabase
+
+Change: Production: backup `20261102-161757`, migration `20261102140000_portfolios.sql` and the
+import (11 portfolios, 22 gallery images, 25 files) run by the maintainer. Merged the feature
+branch; removed `public/portfolio/` (images now in the content-images bucket).
+Logic: Before merging, a build of the branch against production was compared with the old site on
+all 13 portfolio routes: 0 text / 0 pixel differences.
+Debt: Remaining orphaned storage files from the old bug (12) still to clean up.
