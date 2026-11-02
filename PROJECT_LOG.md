@@ -94,3 +94,12 @@ Logic: Login: 0 text / 0 pixel diff. Contact: 0 text diff; the only pixel differ
 the Google Maps iframe (live map tiles vary). Form validation messages and aria state verified
 identical to live.
 Debt: Admin panel remains — needs a non-production database to test writes safely.
+
+## 2026-11-02 — First Vercel deployment
+
+Change: Repo imported into Vercel (lab account, team `cyber-sense-lab`); `main` auto-deploys to
+https://cybersenselab-web.vercel.app. Docs updated.
+Logic: Ran `compare-live` with `LOCAL_URL` set to the Vercel URL for 14 representative routes:
+0 text differences everywhere; pixel differences only on `/projeler?tur=staj` (intentional cover
+fix) and inside Contact's Google Maps iframe. Security headers/CSP served as configured.
+Debt: DNS still points to the FTP server. Admin panel not ported.
