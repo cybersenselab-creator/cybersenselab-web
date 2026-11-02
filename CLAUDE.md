@@ -30,7 +30,7 @@ Goals of the handover:
 | Git repository | Done — `github.com/cybersenselab-creator/cybersenselab-web` (private). Owned by the lab GitHub account (lab Gmail); developers join as collaborators |
 | Live site snapshot (`ftp-snapshot/`) | Done — full FTP mirror, 292 files. **Build output only, not source.** |
 | Original source code | **Treated as unavailable.** The app is rebuilt from scratch using `ftp-snapshot/` as the spec (same routes, design, texts and Supabase calls) |
-| Supabase backup (`pg_dump` + storage) | Partial — `staj-projeleri` dump 2026-10-23 (verified = live). Main project: pending `pg_dump` (needs DB password). Schema inventory + edge function code in `supabase/` |
+| Supabase backup (`pg_dump` + storage) | Done 2026-11-02 — both projects via `scripts/backup.sh` (row counts verified against live; storage 71/71 + 10/10 files). Re-run before any schema change or migration |
 | Supabase ownership | Done — both projects in the lab Supabase org (`odnwsnbwbcuhkedbaxxe`). Claude Code has read-only Supabase MCP access |
 | Vercel deploy + DNS cutover | Pending. Old FTP server stays live until the new deploy is verified |
 
@@ -147,7 +147,9 @@ RPC functions, `auth.users`, storage objects and the edge function.
 - **Never commit** `.env*`, connection strings, `service_role` keys, FTP or Supabase
   account passwords. Credentials were shared over chat — treat them as compromised and
   rotate after migration.
-- `.env.backup` (local only, git-ignored) holds DB connection strings for backups.
+- `.env.backup` (local only, git-ignored) holds DB connection strings (`MAIN_DB_URL`,
+  `STAJ_DB_URL`, session pooler on `aws-0-<region>`) used by `scripts/backup.sh main|staj`.
+  Output goes to git-ignored `backups/` — it contains user data, never share it.
 - Do not write to the FTP server or to production Supabase without explicit approval.
   Read-only operations (download, `pg_dump`) are fine.
 - Always take a fresh backup before any schema change or data migration.

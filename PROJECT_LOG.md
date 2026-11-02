@@ -38,3 +38,14 @@ single-person dependency. Admin RPC authorization was verified, not assumed.
 Debt: `types.ts` is reconstructed (not type-checked with Deno yet). Full `pg_dump` of the
 main project still missing. Instagram sync failing since 2026-11-01 (`instagram_http_400`,
 likely expired 60-day token). `staj-projeleri` `rls_auto_enable` executable by anon.
+
+## 2026-11-02 — Full Supabase backups
+
+Change: `scripts/backup.sh main|staj` — roles + one custom-format `pg_dump` per project via
+the Supabase Postgres 17 Docker image, `schema.sql`/`data.sql` derived locally with
+`pg_restore`, public storage files downloaded. Ran for both projects.
+Logic: The session pooler drops long connections, so the remote part is a single dump with
+retries. Verified every table's row count against live (exact match) and 71/71 + 10/10
+storage files.
+Debt: No test restore into a scratch database yet. Vault secret values and edge-function
+secrets are not exportable — must be re-entered by hand on any new project.

@@ -27,12 +27,31 @@ OUT="backups/$NAME/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT/storage"
 
 pg() { docker run --rm -i -e PGURL="$DB_URL" --entrypoint bash "$IMAGE" -c "$1"; }
+local_pg() { docker run --rm -i --user "$(id -u):$(id -g)" -v "$PWD/$OUT:/out" --entrypoint bash "$IMAGE" -c "$1"; }
 
-echo "→ roles";  pg 'pg_dumpall --dbname="$PGURL" --roles-only --no-role-passwords' > "$OUT/roles.sql"
-echo "→ schema"; pg 'pg_dump --dbname="$PGURL" --schema-only --no-owner --quote-all-identifiers' > "$OUT/schema.sql"
-echo "→ data";   pg 'pg_dump --dbname="$PGURL" --data-only --quote-all-identifiers --exclude-schema=storage_internal' > "$OUT/data.sql"
-echo "→ full (custom format, for pg_restore)"
-pg 'pg_dump --dbname="$PGURL" --format=custom' > "$OUT/full.dump"
+# The pooler occasionally drops long sessions, so each remote step is retried.
+retry() {
+  local attempt
+  for attempt in 1 2 3; do
+    "$@" && return 0
+    echo "  ! attempt $attempt failed, retrying…" >&2
+    sleep 5
+  done
+  return 1
+}
+
+dump_roles() { pg 'pg_dumpall --dbname="$PGURL" --roles-only --no-role-passwords' > "$OUT/roles.sql"; }
+dump_full() { pg 'pg_dump --dbname="$PGURL" --format=custom' > "$OUT/full.dump"; }
+
+echo "→ roles"
+retry dump_roles
+
+# One remote dump; schema.sql / data.sql are derived from it locally.
+echo "→ full dump (custom format)"
+retry dump_full
+echo "→ schema.sql / data.sql"
+local_pg 'pg_restore --schema-only --no-owner -f /out/schema.sql /out/full.dump'
+local_pg 'pg_restore --data-only -f /out/data.sql /out/full.dump'
 
 echo "→ storage files"
 pg 'psql "$PGURL" -At -F "	" -c "select o.bucket_id, o.name from storage.objects o join storage.buckets b on b.id = o.bucket_id where b.public order by 1, 2"' \
