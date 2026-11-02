@@ -20,7 +20,7 @@ const slug = route.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "home";
 async function capture(browser, url, viewport, file) {
   const page = await browser.newPage({ viewport, reducedMotion: "reduce" });
   await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
-  const finalPath = await page.evaluate(() => location.pathname);
+  const finalPath = await page.evaluate(() => location.pathname + location.search);
   // Scroll through the page so in-view reveal animations fire before the full-page shot.
   const height = await page.evaluate(() => document.body.scrollHeight);
   for (let y = 0; y < height; y += 400) {
