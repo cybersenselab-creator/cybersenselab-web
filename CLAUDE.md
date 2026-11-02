@@ -30,8 +30,8 @@ Goals of the handover:
 | Git repository | Done — `github.com/cybersenselab-creator/cybersenselab-web` (private). Owned by the lab GitHub account (lab Gmail); developers join as collaborators |
 | Live site snapshot (`ftp-snapshot/`) | Done — full FTP mirror, 292 files. **Build output only, not source.** |
 | Original source code | **Treated as unavailable.** The app is rebuilt from scratch using `ftp-snapshot/` as the spec (same routes, design, texts and Supabase calls) |
-| Supabase backup (`pg_dump` + storage) | Pending — needs connection strings / `service_role` keys |
-| Supabase ownership | Preferred: project transfer to our org (keeps URLs/keys). Fallback: dump + restore into new projects |
+| Supabase backup (`pg_dump` + storage) | Partial — `staj-projeleri` dump 2026-10-23 (verified = live). Main project: pending `pg_dump` (needs DB password). Schema inventory + edge function code in `supabase/` |
+| Supabase ownership | Done — both projects in the lab Supabase org (`odnwsnbwbcuhkedbaxxe`). Claude Code has read-only Supabase MCP access |
 | Vercel deploy + DNS cutover | Pending. Old FTP server stays live until the new deploy is verified |
 
 Update this table as steps complete.
@@ -125,7 +125,8 @@ Common columns: `is_published`, `sort_order`, `created_at`.
 **Storage buckets:** `research-area-images`, `team-member-images`, `project-images`
 (main), `project-media` (internship project).
 
-**Edge function:** `instagram-sync` (invoked from the admin panel with the user JWT).
+**Edge function:** `instagram-sync` — Instagram posts → announcements, run by pg_cron every
+15 min and manually from the admin panel. Code, secrets list and known issues: `supabase/README.md`.
 
 When migrating or backing up, all of these must come along: schema, RLS policies,
 RPC functions, `auth.users`, storage objects and the edge function.

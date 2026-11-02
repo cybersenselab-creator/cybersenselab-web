@@ -12,3 +12,6 @@ dist/
 ftp-snapshot/
 
 .vercel/
+
+# Database dumps (contain user data) — never commit
+backups/
