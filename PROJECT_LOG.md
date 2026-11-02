@@ -10,7 +10,7 @@
 | Layout (header/footer) | `src/components/layout/` | Ported — Header, Footer, ScrollTopButton, page transitions |
 | Shared UI / cards | `src/components/ui/`, `src/components/cards/` | Ported — LabIcon (auto-converted), UIStates, Skeletons, SectionHeader, Reveal, News/Team/PublicationCard |
 | Data hooks / types | `src/hooks/useContent.ts`, `src/lib/database.types.ts` | Ported; types generated from live schema |
-| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Portfolios (+11 details). Pending: Contact, Login, Admin |
+| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Portfolios (+11 details), Contact, Login. Pending: Admin |
 | Deploy config | `vercel.json` | Done, not yet deployed |
 | Supabase backend record | `supabase/` | Inventory + `instagram-sync` source (types reconstructed) |
 | Reference spec | `reference/assets/` | Formatted live bundles |
@@ -85,3 +85,12 @@ Logic: The original was hand-written with `createElement`; converted to JSX and 
 stay in the URL. List, filtered list and all 11 detail pages: 0 text / 0 pixel diff; lightbox
 behaviour (focus, ←/→, Esc) verified against live.
 Debt: Portfolio content is hard-coded — editing it needs a deploy (no admin UI), same as live.
+
+## 2026-11-02 — Contact and Login
+
+Change: `src/pages/Contact.tsx` (react-hook-form, mailto submission, Google Maps embed, settings
+from `site_ayarlari`) and `src/pages/Login.tsx`. `PageHeader` subtitle is now optional.
+Logic: Login: 0 text / 0 pixel diff. Contact: 0 text diff; the only pixel differences are inside
+the Google Maps iframe (live map tiles vary). Form validation messages and aria state verified
+identical to live.
+Debt: Admin panel remains — needs a non-production database to test writes safely.
