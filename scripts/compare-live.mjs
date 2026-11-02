@@ -20,6 +20,7 @@ const slug = route.replace(/[^a-z0-9]+/gi, "_").replace(/^_|_$/g, "") || "home";
 async function capture(browser, url, viewport, file) {
   const page = await browser.newPage({ viewport, reducedMotion: "reduce" });
   await page.goto(url, { waitUntil: "networkidle", timeout: 60000 });
+  const finalPath = await page.evaluate(() => location.pathname);
   // Scroll through the page so in-view reveal animations fire before the full-page shot.
   const height = await page.evaluate(() => document.body.scrollHeight);
   for (let y = 0; y < height; y += 400) {
@@ -32,7 +33,7 @@ async function capture(browser, url, viewport, file) {
   await page.screenshot({ path: file, fullPage: true });
   const text = (await page.evaluate(() => document.body.innerText)).split("\n").map((s) => s.trim()).filter(Boolean);
   await page.close();
-  return text;
+  return { text, finalPath };
 }
 
 function pixelDiff(fileA, fileB, out) {
@@ -57,8 +58,11 @@ let failed = false;
 for (const [name, viewport] of Object.entries(viewports)) {
   const liveFile = `${OUT}/${slug}-${name}-live.png`;
   const localFile = `${OUT}/${slug}-${name}-local.png`;
-  const liveText = await capture(browser, LIVE + route, viewport, liveFile);
-  const localText = await capture(browser, LOCAL + route, viewport, localFile);
+  // The old Apache server redirects /route → /route/ (one folder per route), which also
+  // disables the active nav highlight there. Load the local build at the same final path so
+  // only real content differences are reported.
+  const { text: liveText, finalPath } = await capture(browser, LIVE + route, viewport, liveFile);
+  const { text: localText } = await capture(browser, LOCAL + finalPath, viewport, localFile);
   const localSet = new Set(localText);
   const liveSet = new Set(liveText);
   const missing = liveText.filter((t) => !localSet.has(t));
