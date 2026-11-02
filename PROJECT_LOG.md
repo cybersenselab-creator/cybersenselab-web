@@ -10,7 +10,7 @@
 | Layout (header/footer) | `src/components/layout/` | Ported — Header, Footer, ScrollTopButton, page transitions |
 | Shared UI / cards | `src/components/ui/`, `src/components/cards/` | Ported — LabIcon (auto-converted), UIStates, Skeletons, SectionHeader, Reveal, News/Team/PublicationCard |
 | Data hooks / types | `src/hooks/useContent.ts`, `src/lib/database.types.ts` | Ported; types generated from live schema |
-| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Pending: Portfolios, Contact, Login, Admin |
+| Pages | `src/pages/*.tsx` | Ported + verified: Home, Privacy, Publications, Team, Events, Announcements, Projects (+2 detail). Portfolios (+11 details). Pending: Contact, Login, Admin |
 | Deploy config | `vercel.json` | Done, not yet deployed |
 | Supabase backend record | `supabase/` | Inventory + `instagram-sync` source (types reconstructed) |
 | Reference spec | `reference/assets/` | Formatted live bundles |
@@ -74,3 +74,14 @@ Fixed (separate commit): internship cover images used Supabase image transformat
 (403 on Free plan) — now original object URLs. Note: covers are 1.7–2.2 MB PNGs; worth
 compressing in storage later.
 Debt: Portfolios, Contact, Login, Admin remain.
+
+## 2026-11-02 — Portfolios
+
+Change: `/portfolyolar` and `/portfolyolar/:id` ported to `src/pages/Portfolios.tsx`; static data
+in `src/data/portfolios.ts`; scoped stylesheet `src/styles/portfolios.css` (imported only by this
+page — every selector is under `.pf-`); 25 images moved from FTP `/assets/portfolio-*-v2.png`
+to `public/portfolio/` (renamed without prefix/suffix).
+Logic: The original was hand-written with `createElement`; converted to JSX and typed. Filters
+stay in the URL. List, filtered list and all 11 detail pages: 0 text / 0 pixel diff; lightbox
+behaviour (focus, ←/→, Esc) verified against live.
+Debt: Portfolio content is hard-coded — editing it needs a deploy (no admin UI), same as live.
