@@ -27,11 +27,12 @@ Goals of the handover:
 
 | Item | Status |
 |---|---|
-| Git repository | Done — `github.com/cybersenselab-creator/cybersenselab-web` (private). Owned by the lab GitHub account (lab Gmail); developers join as collaborators |
+| Git repository | Done — `github.com/cybersenselab-creator/cybersenselab-web` (**public** since 2026-11-02; secret scanning + push protection on). Owned by the lab GitHub account; developers join as collaborators |
 | Live site snapshot (`ftp-snapshot/`) | Done — full FTP mirror, 292 files. **Build output only, not source.** |
 | Original source code | **Treated as unavailable.** The app is rebuilt from scratch using `ftp-snapshot/` as the spec (same routes, design, texts and Supabase calls) |
 | Supabase backup (`pg_dump` + storage) | Done 2026-11-02 — both projects via `scripts/backup.sh` (row counts verified against live; storage 71/71 + 10/10 files). Re-run before any schema change or migration |
 | Supabase ownership | Done — both projects in the lab Supabase org (`odnwsnbwbcuhkedbaxxe`). Claude Code has read-only Supabase MCP access |
+| Portfolios in Supabase | Done 2026-11-02 — 11 portfolios imported; managed in the admin panel |
 | Vercel deploy | Done 2026-11-02 — project `cybersenselab-web` (team `cyber-sense-lab`, lab account), auto-deploys `main`; https://cybersenselab-web.vercel.app verified page-by-page against live with `compare-live` (`LOCAL_URL=` the Vercel URL) |
 | Admin panel | Ported 2026-11-02; verified against the old panel on the same local DB (UI + 12 write scenarios identical) |
 | Storage-delete fix | Migration `20261102120000_admin_select_storage_images.sql` applied to production 2026-11-02 (after backup `20261102-155451`). 12 orphaned files still to clean up |
