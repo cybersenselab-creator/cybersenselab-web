@@ -63,6 +63,10 @@ npm run build      # tsc + vite build → dist/
 npm run preview
 ```
 
+On Vercel the four `VITE_*` variables are set for Production and Preview as **Sensitive**, so
+the dashboard/API show them empty — that is expected; they are inlined at build time. The
+values are the publishable keys (Supabase → Project Settings → API Keys).
+
 Stack versions match the live bundle: React 18.3, react-router 7, framer-motion 11,
 TanStack Query 5, react-hot-toast 2, supabase-js 2, Tailwind **v3** (not v4).
 
